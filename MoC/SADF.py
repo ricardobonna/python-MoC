@@ -1,20 +1,14 @@
 from multiprocessing import Process, Queue
 
-class Actor(Process):
-    def __init__(self, c, p, f, imps, outs, nIter = 0):
+class Kernel(Process):
+    def __init__(self, ctrl, imps, outs, nIter = 0):
         Process.__init__(self)
-        self.c = c          # List of token consumption rates
-        self.p = p          # List of token production rates
-        self.m = len(c)     # Number of inputs
-        self.n = len(p)     # Number of outputs
+        self.ctrl = ctrl    # Control input channel
+        self.m = len(imps)  # Number of inputs
+        self.n = len(outs)  # Number of outputs
         self.imps = imps    # List of input channels
         self.outs = outs    # List of output channels
-        self.fun = f        # Function to be executed
         self.nIter = nIter  # Maximun number of evaluation cycles (0 means inf)
-        if len(self.imps) != self.m:
-            raise Exception('Number of inputs wrong')
-        if len(self.outs) != self.n:
-            raise Exception('Number of outputs wrong')
 
     def run(self):
         n = 0
@@ -23,6 +17,8 @@ class Actor(Process):
                 n += 1
             if n > self.nIter:
                 break
+            # Reads the control input
+            (c, p, f) = self.ctrl.get()
             # Reads inputs based on token consumption rates
             imputs = []
             for i in range(self.m):
