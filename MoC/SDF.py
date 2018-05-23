@@ -1,5 +1,15 @@
 from multiprocessing import Process, Queue
 
+def inputRead(c, imps):
+    imputs = []
+    for i in range(len(c)):
+        aux = []
+        for j in range(c[i]):
+            aux.append(imps[i].get())
+        imputs.append(aux)
+    return imputs
+
+
 class Actor(Process):
     def __init__(self, c, p, f, imps, outs, nIter = 0):
         Process.__init__(self)
@@ -10,7 +20,7 @@ class Actor(Process):
         self.imps = imps    # List of input channels
         self.outs = outs    # List of output channels
         self.fun = f        # Function to be executed
-        self.nIter = nIter  # Maximun number of evaluation cycles (0 means inf)
+        self.nIter = nIter  # Maximun number of firing cycles (0 means inf)
         if len(self.imps) != self.m:
             raise Exception('Number of inputs wrong')
         if len(self.outs) != self.n:
@@ -24,12 +34,7 @@ class Actor(Process):
             if n > self.nIter:
                 break
             # Reads inputs based on token consumption rates
-            imputs = []
-            for i in range(self.m):
-                aux = []
-                for j in range(self.c[i]):
-                    aux.append(self.imps[i].get())
-                imputs.append(aux)
+            imputs = inputRead(self.c, self.imps)
             # Applies function to inputs
             outputs = self.fun(imputs)
             if len(outputs) != self.n:
@@ -38,7 +43,6 @@ class Actor(Process):
             for i in range(self.n):
                 for j in range(self.p[i]):
                     self.outs[i].put(outputs[i][j])
-
 
 
 if __name__ == '__main__':
