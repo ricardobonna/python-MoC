@@ -1,7 +1,8 @@
 """
 Author: Ricardo Bonna
 Creation date: 22/mai/2018
-Module description: This module provides the class Actor for creating SDF actors.
+Module description: This module provides the class Actor for creating
+SDF actors.
 """
 
 from MoC_Core import *
@@ -11,6 +12,25 @@ class Actor(Process):
     The Actor class is used to create SDF actors.
     """
     def __init__(self, c, p, f, imps, outs, nIter = 0):
+        """
+        Actor process initializer.
+
+        Parameters
+        ----------
+        c : [Int]
+            List of token consumption rate.
+        p : [Int]
+            List of token production rate.
+        f : function f([[Tokens]]) -> [[Tokens]]
+            Function executed by the actor when fired.
+        imps : [Queue]
+            List of input channels.
+        outs : [Queue]
+            List of output channels.
+        nIter : Int (default = 0)
+            Maximun number of times that the kernel is allow to fire.
+            When nIter = 0, it can fire indefinitelly.
+        """
         Process.__init__(self)
         self.c = c          # List of token consumption rates
         self.p = p          # List of token production rates

@@ -12,6 +12,21 @@ class Kernel(Process):
     The Kernel class creates SADF kernel processes.
     """
     def __init__(self, ctrl, imps, outs, nIter = 0):
+        """
+        Kernel process initializer.
+
+        Parameters
+        ----------
+        ctrl : Queue
+            Control channel that connects the kernel to a detector.
+        imps : [Queue]
+            List of input data channels.
+        outs : [Queue]
+            List of output data channels.
+        nIter : [Int]
+            Maximun number of times that the kernel is allow to fire.
+            When nIter = 0 (Default), it can fire indefinitelly.
+        """
         Process.__init__(self)
         self.ctrl = ctrl    # Control input channel
         self.m = len(imps)  # Number of inputs
@@ -42,7 +57,31 @@ class Kernel(Process):
 
 
 class Detector(Process):
+    """
+    The Detector class creates SADF detector processes.
+    """
     def __init__(self, c, f, g, s0, imps, outs, nIter = 0):
+        """
+        Detector process initializer.
+
+        Parameters
+        ----------
+        c : [Int]
+            List of token consumption rate.
+        f : function f(State, [[Tokens]]) -> State
+            Next state function. Returns the next state.
+        g : function g(State) -> [[Tokens]]
+            State to output function. Returns the list of outputs.
+        s0 : State
+            Initial state.
+        imps : [Queue]
+            List of input data channels.
+        outs : [Queue]
+            List of output control channels.
+        nIter : Int (default = 0)
+            Maximun number of times that the kernel is allow to fire.
+            When nIter = 0, it can fire indefinitelly.
+        """
         Process.__init__(self)
         self.c = c          # List of token consumption rate
         self.f = f          # Next state function
