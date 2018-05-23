@@ -68,9 +68,9 @@ class Detector(Process):
         ----------
         c : [Int]
             List of token consumption rate.
-        f : function f(State, [[Tokens]]) -> State
+        f : function : State, [[Tokens]] -> State
             Next state function. Returns the next state.
-        g : function g(State) -> [[Tokens]]
+        g : function : State -> [[Tokens]]
             State to output function. Returns the list of outputs.
         s0 : State
             Initial state.
@@ -114,9 +114,9 @@ class Detector(Process):
                     self.outs[i].put(outputs[i][j])
 
 
+# Test of the module
 if __name__ == '__main__':
-    print("Hello World")
-
+    print("SADF test model")
 
     def next_state(s, imps):
         if s == 1:

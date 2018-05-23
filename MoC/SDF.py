@@ -21,7 +21,7 @@ class Actor(Process):
             List of token consumption rate.
         p : [Int]
             List of token production rate.
-        f : function f([[Tokens]]) -> [[Tokens]]
+        f : function : [[Tokens]] -> [[Tokens]]
             Function executed by the actor when fired.
         imps : [Queue]
             List of input channels.
@@ -64,8 +64,9 @@ class Actor(Process):
                     self.outs[i].put(outputs[i][j])
 
 
+# Test of the module
 if __name__ == '__main__':
-    print("Hello World")
+    print("SDF test model")
     q1 = Queue()
     q2 = Queue()
 
