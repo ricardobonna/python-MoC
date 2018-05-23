@@ -1,35 +1,16 @@
-from multiprocessing import Process, Queue
+"""
+Author: Ricardo Bonna
+Creation date: 22/mai/2018
+Module description: This module provides the classes Kernel and Detector, for
+creating the two basic components of an SADF model.
+"""
 
-def inputRead(c, imps):
-    imputs = []
-    for i in range(len(c)):
-        aux = []
-        for j in range(c[i]):
-            aux.append(imps[i].get())
-        imputs.append(aux)
-    return imputs
-
-
-class Fork(Process):
-    def __init__(self, imp, outs, nIter = 0):
-        Process.__init__(self)
-        self.imp = imp      # Input channel
-        self.outs = outs    # List of output channels
-        self.nIter = nIter  # Maximun number of firing cycles (0 means inf)
-
-    def run(self):
-        n = 0
-        while 1:
-            if self.nIter != 0:
-                n += 1
-            if n > self.nIter:
-                break
-            inputVal = self.imp.get()
-            for i in self.outs:
-                i.put(inputVal)
-
+from MoC_Core import *
 
 class Kernel(Process):
+    """
+    The Kernel class creates SADF kernel processes.
+    """
     def __init__(self, ctrl, imps, outs, nIter = 0):
         Process.__init__(self)
         self.ctrl = ctrl    # Control input channel
@@ -96,12 +77,7 @@ class Detector(Process):
 
 if __name__ == '__main__':
     print("Hello World")
-    si = Queue()
-    so = Queue()
-    sfb = Queue()
-    sd = Queue()
-    sctrl = Queue()
-    sko = Queue()
+
 
     def next_state(s, imps):
         if s == 1:
@@ -117,19 +93,28 @@ if __name__ == '__main__':
         return [[a[0][0] + a[1][0]]]
 
     def func2(a):
-        return [[a[0][0] - a[1][0] - a[1][1]]]
+        return [[a[0][0] - 10]]
 
     def out_decode(s):
         if s == 1:
             return [[([1,1], [1], func1)]]
-        return [[([1,2], [1], func2)]]
+        return [[([1,0], [1], func2)]]
 
+    # Definition of the channels
+    si = Queue()
+    so = Queue()
+    sfb = Queue()
+    sd = Queue()
+    sctrl = Queue()
+    sko = Queue()
 
+    # Definition of the process network
     kernelProc = Kernel(sctrl, [sfb, si], [sko])
     forkProc = Fork(sko, [sfb, so, sd])
     detectorProc = Detector([1], next_state, out_decode, 1, [sd], [sctrl])
     sko.put(0)
 
+    # Start every process in the process network
     kernelProc.start()
     forkProc.start()
     detectorProc.start()

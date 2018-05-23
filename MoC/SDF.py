@@ -1,16 +1,15 @@
-from multiprocessing import Process, Queue
+"""
+Author: Ricardo Bonna
+Creation date: 22/mai/2018
+Module description: This module provides the class Actor for creating SDF actors.
+"""
 
-def inputRead(c, imps):
-    imputs = []
-    for i in range(len(c)):
-        aux = []
-        for j in range(c[i]):
-            aux.append(imps[i].get())
-        imputs.append(aux)
-    return imputs
-
+from MoC_Core import *
 
 class Actor(Process):
+    """
+    The Actor class is used to create SDF actors.
+    """
     def __init__(self, c, p, f, imps, outs, nIter = 0):
         Process.__init__(self)
         self.c = c          # List of token consumption rates
