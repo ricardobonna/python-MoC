@@ -5,10 +5,10 @@ Module description: This module provides commom functionalities used as
 support for the SDF and SADF modules.
 """
 
-
 from multiprocessing import Process, Queue
+from typing import List
 
-def inputRead(c, imps):
+def inputRead(c: List[int], imps: List[Queue]) -> List[List]:
     """
     Reads the tokens in the input channels (Queues) given by the list imps
     using the token rates defined by the list c.
@@ -16,16 +16,18 @@ def inputRead(c, imps):
 
     Parameters
     ----------
-    c : [Int]
+    c : List[int]
         List of token consumption rates.
-    imps : [Queue]
+    imps : List[Queue]
         List of channels.
 
     Returns
     ----------
-    imputs : [[Tokens]]
+    imputs: List[List]
         List of token lists.
     """
+    if len(c) != len(imps):
+        raise Exception("Token consumption list and Queue list have different sizes")
     imputs = []
     for i in range(len(c)):
         aux = []
@@ -41,17 +43,17 @@ class Fork(Process):
     junctions. A fork process replicates the tokens from its single input
     channel to its multiple output channels.
     """
-    def __init__(self, imp, outs, nIter = 0):
+    def __init__(self, imp: Queue, outs: List[Queue], nIter: int = 0) -> None:
         """
         Fork process initializer.
 
         Parameters
         ----------
-        imp : Queue
+        imp: Queue
             Imput channel.
-        outs : [Queue]
+        outs: List[Queue]
             List of output channels.
-        nIter : Int (default = 0)
+        nIter: int  = 0
             Maximun number of times that the kernel is allow to fire.
             When nIter = 0, it can fire indefinitelly.
         """
@@ -70,3 +72,12 @@ class Fork(Process):
             inputVal = self.imp.get()
             for i in self.outs:
                 i.put(inputVal)
+
+
+# Test of the module
+if __name__ == '__main__':
+    print("MoC_Core test model")
+    c = [1]
+    q = [Queue()]
+    q[0].put(12)
+    print(inputRead(c,q))
