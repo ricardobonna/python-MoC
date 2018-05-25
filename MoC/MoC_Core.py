@@ -1,14 +1,15 @@
 """
 Author: Ricardo Bonna
-Creation date: 23/mai/2018
+Creation date: 23/may/2018
 Module description: This module provides commom functionalities used as
 support for the SDF and SADF modules.
 """
 
 from multiprocessing import Process, Queue
 from typing import List
+from matplotlib import pyplot
 
-def inputRead(c: List[int], imps: List[Queue]) -> List[List]:
+def inputRead(c, imps):
     """
     Reads the tokens in the input channels (Queues) given by the list imps
     using the token rates defined by the list c.
@@ -37,13 +38,35 @@ def inputRead(c: List[int], imps: List[Queue]) -> List[List]:
     return imputs
 
 
+def SequencePlot(nSamples, imp, grid = True):
+    """
+    Plot a sequence of nSamples from the imput channel imp
+
+    Parameters
+    ----------
+    nSamples: int
+        Number of samples to be extracted from channel imp.
+    imp: Queue
+        Input channel.
+    grid: bool = True
+        Add grid to the plot.
+    """
+    data = []
+    for i in range(nSamples):
+        data.append(imp.get())
+    pyplot.plot(data, 'b.')
+    if grid:
+        pyplot.grid()
+    pyplot.show()
+
+
 class Fork(Process):
     """
     The Fork class create fork processes that are used to create channel
     junctions. A fork process replicates the tokens from its single input
     channel to its multiple output channels.
     """
-    def __init__(self, imp: Queue, outs: List[Queue], nIter: int = 0) -> None:
+    def __init__(self, imp, outs, nIter = 0):
         """
         Fork process initializer.
 

@@ -1,6 +1,6 @@
 """
 Author: Ricardo Bonna
-Creation date: 22/mai/2018
+Creation date: 22/may/2018
 Module description: This module provides the classes Kernel and Detector, for
 creating the two basic components of an SADF model.
 """
@@ -160,5 +160,5 @@ if __name__ == '__main__':
 
     for i in range(50):
         si.put(i+1)
-    for i in range(50):
-        print(so.get())
+
+    SequencePlot(50, so)

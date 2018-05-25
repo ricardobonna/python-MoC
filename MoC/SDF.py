@@ -1,6 +1,6 @@
 """
 Author: Ricardo Bonna
-Creation date: 22/mai/2018
+Creation date: 22/may/2018
 Module description: This module provides the class Actor for creating
 SDF actors.
 """
