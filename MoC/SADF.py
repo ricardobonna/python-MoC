@@ -151,6 +151,8 @@ if __name__ == '__main__':
     kernelProc = Kernel(sctrl, [sfb, si], [sko])
     forkProc = Fork(sko, [sfb, so, sd])
     detectorProc = Detector([1], next_state, out_decode, 1, [sd], [sctrl])
+
+    # Initial token
     sko.put(0)
 
     # Start every process in the process network
@@ -162,3 +164,8 @@ if __name__ == '__main__':
         si.put(i+1)
 
     SequencePlot(50, so)
+
+    # Kill all the processes
+    kernelProc.terminate()
+    forkProc.terminate()
+    detectorProc.terminate()

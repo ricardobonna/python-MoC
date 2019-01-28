@@ -67,12 +67,15 @@ class Actor(Process):
 # Test of the module
 if __name__ == '__main__':
     print("SDF test model")
+
+    # Channels
     q1 = Queue()
     q2 = Queue()
 
     def func_test(a):
         return [[a[0][0]+a[0][1], a[0][0]-a[0][2]]]
 
+    # Process definition
     proc = Actor([3], [2], func_test, [q1], [q2])
     proc.start()
 
@@ -82,3 +85,4 @@ if __name__ == '__main__':
     print(q2.get())
     print(q2.get())
     print(q2.get())
+    proc.terminate()
