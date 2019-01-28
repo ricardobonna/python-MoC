@@ -9,9 +9,9 @@ from multiprocessing import Process, Queue
 from typing import List
 from matplotlib import pyplot
 
-def inputRead(c, imps):
+def inputRead(c, inps):
     """
-    Reads the tokens in the input channels (Queues) given by the list imps
+    Reads the tokens in the input channels (Queues) given by the list inps
     using the token rates defined by the list c.
     It outputs a list where each element is a list of the read tokens.
 
@@ -19,41 +19,41 @@ def inputRead(c, imps):
     ----------
     c : List[int]
         List of token consumption rates.
-    imps : List[Queue]
+    inps : List[Queue]
         List of channels.
 
     Returns
     ----------
-    imputs: List[List]
+    inputs: List[List]
         List of token lists.
     """
-    if len(c) != len(imps):
+    if len(c) != len(inps):
         raise Exception("Token consumption list and Queue list have different sizes")
-    imputs = []
+    inputs = []
     for i in range(len(c)):
         aux = []
         for j in range(c[i]):
-            aux.append(imps[i].get())
-        imputs.append(aux)
-    return imputs
+            aux.append(inps[i].get())
+        inputs.append(aux)
+    return inputs
 
 
-def SequencePlot(nSamples, imp, grid = True):
+def SequencePlot(nSamples, inp, grid = True):
     """
-    Plot a sequence of nSamples from the imput channel imp
+    Plot a sequence of nSamples from the input channel inp
 
     Parameters
     ----------
     nSamples: int
-        Number of samples to be extracted from channel imp.
-    imp: Queue
+        Number of samples to be extracted from channel inp.
+    inp: Queue
         Input channel.
     grid: bool = True
         Add grid to the plot.
     """
     data = []
     for i in range(nSamples):
-        data.append(imp.get())
+        data.append(inp.get())
     pyplot.plot(data, 'b.')
     if grid:
         pyplot.grid()
@@ -66,14 +66,14 @@ class Fork(Process):
     junctions. A fork process replicates the tokens from its single input
     channel to its multiple output channels.
     """
-    def __init__(self, imp, outs, nIter = 0):
+    def __init__(self, inp, outs, nIter = 0):
         """
         Fork process initializer.
 
         Parameters
         ----------
-        imp: Queue
-            Imput channel.
+        inp: Queue
+            input channel.
         outs: List[Queue]
             List of output channels.
         nIter: int  = 0
@@ -81,7 +81,7 @@ class Fork(Process):
             When nIter = 0, it can fire indefinitelly.
         """
         Process.__init__(self)
-        self.imp = imp      # Input channel
+        self.inp = inp      # Input channel
         self.outs = outs    # List of output channels
         self.nIter = nIter  # Maximun number of firing cycles (0 means inf)
 
@@ -92,7 +92,7 @@ class Fork(Process):
                 n += 1
             if n > self.nIter:
                 break
-            inputVal = self.imp.get()
+            inputVal = self.inp.get()
             for i in self.outs:
                 i.put(inputVal)
 

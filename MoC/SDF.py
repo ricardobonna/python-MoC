@@ -11,7 +11,7 @@ class Actor(Process):
     """
     The Actor class is used to create SDF actors.
     """
-    def __init__(self, c, p, f, imps, outs, nIter = 0):
+    def __init__(self, c, p, f, inps, outs, nIter = 0):
         """
         Actor process initializer.
 
@@ -23,7 +23,7 @@ class Actor(Process):
             List of token production rate.
         f : function : [[Tokens]] -> [[Tokens]]
             Function executed by the actor when fired.
-        imps : [Queue]
+        inps : [Queue]
             List of input channels.
         outs : [Queue]
             List of output channels.
@@ -36,11 +36,11 @@ class Actor(Process):
         self.p = p          # List of token production rates
         self.m = len(c)     # Number of inputs
         self.n = len(p)     # Number of outputs
-        self.imps = imps    # List of input channels
+        self.inps = inps    # List of input channels
         self.outs = outs    # List of output channels
         self.fun = f        # Function to be executed
         self.nIter = nIter  # Maximun number of firing cycles (0 means inf)
-        if len(self.imps) != self.m:
+        if len(self.inps) != self.m:
             raise Exception('Number of inputs wrong')
         if len(self.outs) != self.n:
             raise Exception('Number of outputs wrong')
@@ -53,9 +53,9 @@ class Actor(Process):
             if n > self.nIter:
                 break
             # Reads inputs based on token consumption rates
-            imputs = inputRead(self.c, self.imps)
+            inputs = inputRead(self.c, self.inps)
             # Applies function to inputs
-            outputs = self.fun(imputs)
+            outputs = self.fun(inputs)
             if len(outputs) != self.n:
                 raise Exception('Function returns wrong output number')
             # Write on the output channels

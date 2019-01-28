@@ -11,7 +11,7 @@ class Kernel(Process):
     """
     The Kernel class creates SADF kernel processes.
     """
-    def __init__(self, ctrl, imps, outs, nIter = 0):
+    def __init__(self, ctrl, inps, outs, nIter = 0):
         """
         Kernel process initializer.
 
@@ -19,7 +19,7 @@ class Kernel(Process):
         ----------
         ctrl : Queue
             Control channel that connects the kernel to a detector.
-        imps : [Queue]
+        inps : [Queue]
             List of input data channels.
         outs : [Queue]
             List of output data channels.
@@ -29,9 +29,9 @@ class Kernel(Process):
         """
         Process.__init__(self)
         self.ctrl = ctrl    # Control input channel
-        self.m = len(imps)  # Number of inputs
+        self.m = len(inps)  # Number of inputs
         self.n = len(outs)  # Number of outputs
-        self.imps = imps    # List of input channels
+        self.inps = inps    # List of input channels
         self.outs = outs    # List of output channels
         self.nIter = nIter  # Maximun number of firing cycles (0 means inf)
 
@@ -45,9 +45,9 @@ class Kernel(Process):
             # Reads the control input
             (c, p, f) = self.ctrl.get()
             # Reads inputs based on token consumption rates
-            imputs = inputRead(c, self.imps)
+            inputs = inputRead(c, self.inps)
             # Applies function to inputs
-            outputs = f(imputs)
+            outputs = f(inputs)
             if len(outputs) != self.n:
                 raise Exception('Function returns wrong output number')
             # Write on the output channels
@@ -60,7 +60,7 @@ class Detector(Process):
     """
     The Detector class creates SADF detector processes.
     """
-    def __init__(self, c, f, g, s0, imps, outs, nIter = 0):
+    def __init__(self, c, f, g, s0, inps, outs, nIter = 0):
         """
         Detector process initializer.
 
@@ -74,7 +74,7 @@ class Detector(Process):
             State to output function. Returns the list of outputs.
         s0 : State
             Initial state.
-        imps : [Queue]
+        inps : [Queue]
             List of input data channels.
         outs : [Queue]
             List of output control channels.
@@ -87,9 +87,9 @@ class Detector(Process):
         self.f = f          # Next state function
         self.g = g          # Output decoder
         self.state = s0     # Initial state
-        self.m = len(imps)  # Number of inputs
+        self.m = len(inps)  # Number of inputs
         self.n = len(outs)  # Number of outputs
-        self.imps = imps    # List of input channels
+        self.inps = inps    # List of input channels
         self.outs = outs    # List of output channels
         self.nIter = nIter  # Maximun number of firing cycles (0 means inf)
 
@@ -101,9 +101,9 @@ class Detector(Process):
             if n > self.nIter:
                 break
             # Reads inputs based on token consumption rates
-            imputs = inputRead(self.c, self.imps)
+            inputs = inputRead(self.c, self.inps)
             # Performs state transition
-            self.state = self.f(self.state, imputs)
+            self.state = self.f(self.state, inputs)
             # Output decoding
             outputs = self.g(self.state)
             if len(outputs) != self.n:
@@ -118,13 +118,13 @@ class Detector(Process):
 if __name__ == '__main__':
     print("SADF test model")
 
-    def next_state(s, imps):
+    def next_state(s, inps):
         if s == 1:
-            if imps[0][0] > 100:
+            if inps[0][0] > 100:
                 return 2
             return 1
         else:
-            if imps[0][0] < 0:
+            if inps[0][0] < 0:
                 return 1
             return 2
 
