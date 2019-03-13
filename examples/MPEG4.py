@@ -12,6 +12,14 @@ from SADF import *
 import numpy as np
 
 
+################### Model parameters ####################
+fs = (16,16)                      # Frame size. Each element of fs should be a multiple of bs
+bs = 8                            # Macro blocks of bs x bs pixels
+nb = int(fs[0]*fs[1]/(bs**2))     # Number of macro blocks in a frame
+
+
+################### Auxiliary functions ####################
+
 # Applies the Inverse Discrete Cosine Transform to a matrix inp
 def idct(inp):
     size = inp.shape
@@ -79,7 +87,65 @@ def frameRC(mbl, frame):
     return frame
 
 
-# Test of the module
+
+# Next State function for detector FD
+def nextStateFD(state, inps):
+    token_s_ft = inps[0][0]
+    token_s_fb = inps[1][0]
+    if token_s_fb:
+        if token_s_ft == 'I':
+            nextState = 0
+        elif token_s_ft[0] == 'P':
+            nextState = int(token_s_ft[1:])
+    return nextState
+
+
+# Output decode function for detector FD
+def outDecodeFD(state, inps):
+    return
+
+################### Data and control channels ####################
+
+# Data channels
+s_mb = Queue()
+s_db = Queue()
+s_idct = Queue()
+s_pf = Queue()
+s_v = Queue()
+s_out = Queue()
+s_out1 = Queue()
+s_out2 = Queue()
+s_ft = Queue()
+s_fb = Queue()
+
+# Control channels
+c_idct = Queue()
+c_vld = Queue()
+c_mc = Queue()
+c_rc = Queue()
+
+# Initial tokens
+s_fb.put(True)
+s_fb.put(True)
+s_fb.put(True)
+
+################### Processes ####################
+
+# Kernels
+VLD = Kernel(c_vld, [s_mb], [s_db, s_v], 0)
+IDCT = Kernel(c_idct, [s_db], [s_idct], 0)
+MC = Kernel(c_mc, [s_v, s_out2], [s_pf], 0)
+RC = Kernel(c_rc, [s_idct, s_pf], [s_out], 0)
+
+# Forks
+fork_out = Fork(s_out, [s_out1, s_out2], 0)
+
+# Detector
+FD = Detector([1,1], nextStateFD, outDecodeFD, 0, [s_ft, s_fb], [c_idct, c_vld, c_mc, c_rc], 0)
+
+
+################### Test the module ####################
+
 if __name__ == '__main__':
     print("MPEG4 model\n")
     # print(idct(np.eye(3)))
@@ -91,6 +157,6 @@ if __name__ == '__main__':
 
     a = np.around(10*np.random.rand(4,4))
     print(a)
-    print('\n\n')
+    print('\n')
     mvs = [(np.array([1,1]), np.array([1,0])), (np.array([3,3]), np.array([0,-1]))]
     print(motionComp(mvs,a,2))

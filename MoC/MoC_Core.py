@@ -1,6 +1,7 @@
 """
 Author: Ricardo Bonna
 Creation date: 23/may/2018
+Last update: 13/mar/2019
 Module description: This module provides commom functionalities used as
 support for the SDF and SADF modules.
 """
@@ -17,14 +18,14 @@ def inputRead(c, inps):
 
     Parameters
     ----------
-    c : List[int]
+    c : [int]
         List of token consumption rates.
-    inps : List[Queue]
+    inps : [Queue]
         List of channels.
 
     Returns
     ----------
-    inputs: List[List]
+    inputs: [List]
         List of token lists.
     """
     if len(c) != len(inps):
@@ -48,7 +49,7 @@ def SequencePlot(nSamples, inp, grid = True):
         Number of samples to be extracted from channel inp.
     inp: Queue
         Input channel.
-    grid: bool = True
+    grid: bool (default = True)
         Add grid to the plot.
     """
     data = []
@@ -74,9 +75,9 @@ class Fork(Process):
         ----------
         inp: Queue
             input channel.
-        outs: List[Queue]
+        outs: [Queue]
             List of output channels.
-        nIter: int  = 0
+        nIter: int (default = 0)
             Maximun number of times that the kernel is allow to fire.
             When nIter = 0, it can fire indefinitelly.
         """

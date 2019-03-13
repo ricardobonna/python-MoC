@@ -1,6 +1,7 @@
 """
 Author: Ricardo Bonna
 Creation date: 22/may/2018
+Last update: 13/mar/2019
 Module description: This module provides the classes Kernel and Detector, for
 creating the two basic components of an SADF model.
 """
@@ -23,9 +24,9 @@ class Kernel(Process):
             List of input data channels.
         outs : [Queue]
             List of output data channels.
-        nIter : [Int]
+        nIter : Int (default = 0)
             Maximun number of times that the kernel is allow to fire.
-            When nIter = 0 (Default), it can fire indefinitelly.
+            When nIter = 0, it can fire indefinitelly.
         """
         Process.__init__(self)
         self.ctrl = ctrl    # Control input channel
@@ -92,6 +93,8 @@ class Detector(Process):
         self.inps = inps    # List of input channels
         self.outs = outs    # List of output channels
         self.nIter = nIter  # Maximun number of firing cycles (0 means inf)
+        if self.m != len(self.c):
+            raise Exception('List of inputs and list of tiken consumption rates with different sizes')
 
     def run(self):
         n = 0
