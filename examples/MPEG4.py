@@ -87,23 +87,6 @@ def frameRC(mbl, frame):
     return frame
 
 
-
-# Next State function for detector FD
-def nextStateFD(state, inps):
-    token_s_ft = inps[0][0]
-    token_s_fb = inps[1][0]
-    if token_s_fb:
-        if token_s_ft == 'I':
-            nextState = 0
-        elif token_s_ft[0] == 'P':
-            nextState = int(token_s_ft[1:])
-    return nextState
-
-
-# Output decode function for detector FD
-def outDecodeFD(state, inps):
-    return
-
 ################### Scenario functions definition ####################
 
 # mb = (matrix block, pos, mv)
@@ -136,6 +119,54 @@ def scenarioIDCT(n):
     if n == 1:
         return ([1], [1], scenarioIDCT_func)
     raise Exception('scenarioIDCT: Outside scenario range')
+
+
+def scenarioMC_func1(b,ml):
+    return [[np.zeros(fs)]]
+
+def scenarioMC_func2(b,ml):
+    m = ml[0]
+    return [[motionComp(b, m, bs)]]
+
+def scenarioMC(n):
+    if n == 0:
+        return ([0,1], [1], scenarioMC_func1)
+    elif n < nb and n > 0:
+        return ([n,1], [1], scenarioMC_func2)
+    else:
+        raise Exception('scenarioMC: Outside scenario range')
+
+
+def scenarioRC_func(a, bl):
+    b = bl[0]
+    return [[frameRC(a,b)], [True]]
+
+def scenarioRC(n):
+    if n == 0:
+        return ([nb,1], [1,1], scenarioRC_func)
+    elif n < nb and n > 0:
+        return ([n,1], [1,1], scenarioRC_func)
+    else:
+        raise Exception('scenarioRC: Outside scenario range')
+
+
+# Next State function for detector FD
+def nextStateFD(state, inps):
+    token_s_ft = inps[0][0]
+    token_s_fb = inps[1][0]
+    if token_s_fb:
+        if token_s_ft == 'I':
+            nextState = 0
+        elif token_s_ft[0] == 'P':
+            nextState = int(token_s_ft[1:])
+    return nextState
+
+
+# Output decode function for detector FD
+def outDecodeFD(state):
+    if state == 0:
+        return [[]]
+    return
 
 
 
