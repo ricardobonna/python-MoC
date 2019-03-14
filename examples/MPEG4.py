@@ -104,6 +104,42 @@ def nextStateFD(state, inps):
 def outDecodeFD(state, inps):
     return
 
+################### Scenario functions definition ####################
+
+# mb = (matrix block, pos, mv)
+def scenarioVLD_func1(mbl):
+    pos = mbl[0][1]
+    block = mbl[0][0]
+    return [[(block, pos)], []]
+
+def scenarioVLD_func2(mbl):
+    pos = mbl[0][1]
+    block = mbl[0][0]
+    mv = mbl[0][2]
+    return [[(block,pos)],[(pos,mv)]]
+
+def scenarioVLD(n):
+    if n == 0:
+        return ([1], [1,0], scenarioVLD_func1)
+    if n == 1:
+        return ([1], [1,1], scenarioVLD_func2)
+    else:
+        raise Exception('scenarioVLD: Outside scenario range')
+
+
+def scenarioIDCT_func(mbl):
+    pos = mbl[0][1]
+    block = mbl[0][0]
+    return [[(idct(block), pos)]]
+
+def scenarioIDCT(n):
+    if n == 1:
+        return ([1], [1], scenarioIDCT_func)
+    raise Exception('scenarioIDCT: Outside scenario range')
+
+
+
+
 ################### Data and control channels ####################
 
 # Data channels
@@ -128,6 +164,7 @@ c_rc = Queue()
 s_fb.put(True)
 s_fb.put(True)
 s_fb.put(True)
+s_out2.put(np.zeros(fs))
 
 ################### Processes ####################
 
