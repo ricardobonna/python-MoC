@@ -31,8 +31,8 @@ def idct(inp):
             else:
                 dct_matrix[i,j] = np.cos((2*j+1) * i * np.pi / (2*size[0]))
     dct_matrix = dct_matrix * np.sqrt(2/size[0])
-    return inp
-    return np.around(dct_matrix.transpose() @ inp @ dct_matrix)
+#    return inp     # Uncomment this line for testing
+    return (dct_matrix.transpose() @ inp @ dct_matrix).astype(int)
 
 # block = (matrix, pos = array[row,col]).
 def blockAdd(block, mat):
@@ -41,7 +41,7 @@ def blockAdd(block, mat):
     b_pos = block[1]-pos_start
     b_size = b_mat.shape
     m_size = mat.shape
-    result = np.zeros(m_size)
+    result = np.zeros(m_size).astype(int)
     for i in range(m_size[0]):
         for j in range(m_size[1]):
             if i in range(b_pos[0], b_pos[0]+b_size[0]) and j in range(b_pos[1], b_pos[1]+b_size[1]):
@@ -73,7 +73,7 @@ def motionComp(mvs, x, bs):
     mCompList1 = [(a[0], a[1]+b[1]) for a in x for b in mvs if np.array_equal(a[1], b[0])]
     mCompList2 = [a for a in x if not any(map(lambda x: np.array_equal(a[1],x), [b[0] for b in mvs]))]
     mCompList = mCompList1 + mCompList2
-    result = np.zeros(x_size)
+    result = np.zeros(x_size).astype(int)
     for i in mCompList:
         result = blockAdd(i,result)
     return result
@@ -91,7 +91,6 @@ def frameRC(mbl, frame):
 
 # mb = (matrix block, pos, mv)
 def scenarioVLD_func1(mbl):
-    #print(mbl)
     block = mbl[0][0][0]
     pos = mbl[0][0][1]
     return [[(block, pos)], []]
@@ -123,7 +122,7 @@ def scenarioIDCT(n):
 
 
 def scenarioMC_func1(inputs):
-    return [[np.zeros(fs)]]
+    return [[np.zeros(fs).astype(int)]]
 
 def scenarioMC_func2(inputs):
     mvl = inputs[0]
@@ -201,7 +200,7 @@ c_rc = Queue()
 s_fb.put(True)
 s_fb.put(True)
 s_fb.put(True)
-s_out2.put(np.zeros(fs))
+s_out2.put(np.zeros(fs).astype(int))
 
 ################### Processes ####################
 
@@ -217,6 +216,23 @@ fork_out = Fork(s_out, [s_out1, s_out2], 0)
 # Detector
 FD = Detector([1,1], nextStateFD, outDecodeFD, 0, [s_ft, s_fb], [c_vld, c_idct, c_mc, c_rc], 0)
 
+
+################### Input creation functions ####################
+
+# Generates a random input stream of macro blocs based on a list of frame types
+def genInpStream(fTypeList):
+    output = []
+    for i in fTypeList:
+        if i == 'I':
+            output += frame2mblocks((bs,bs),(256*np.random.rand(fs[0],fs[1])).astype(int))
+        elif i[0] == 'P':
+            a = int(i[1:])
+            posList = [np.array([a,b]) for a in range(1, fs[0] - bs + 2,bs) for b in range(1, fs[0] - bs + 2,bs)]
+            print(posList)
+            output += [((256*np.random.rand(bs,bs)).astype(int), \
+                posList.pop(int(np.random.rand()*len(posList))), \
+                (bs*np.random.rand(2) - bs/2).astype(int)) for j in range(a)]
+    return output
 
 ################### Test the module ####################
 
@@ -235,15 +251,16 @@ if __name__ == '__main__':
     # mvs = [(np.array([1,1]), np.array([1,0])), (np.array([3,3]), np.array([0,-1]))]
     # print(motionComp(mvs,a,2))
 
-    a = np.around(256*np.random.rand(fs[0],fs[1]))
-    a = a
-    b = frame2mblocks((bs,bs),a)
+    # a = np.around(256*np.random.rand(fs[0],fs[1]))
+    # a = a
+    # b = frame2mblocks((bs,bs),a)
 
-    ft = ['I']
+    ft = ['I','P2']
+    a = genInpStream(ft)
     print('Input\n')
     print(a)
 
-    for i in b:
+    for i in a:
         s_mb.put(i)
     for i in ft:
         s_ft.put(i)
