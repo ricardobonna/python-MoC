@@ -31,8 +31,8 @@ def idct(inp):
             else:
                 dct_matrix[i,j] = np.cos((2*j+1) * i * np.pi / (2*size[0]))
     dct_matrix = dct_matrix * np.sqrt(2/size[0])
-    return dct_matrix.transpose() @ inp @ dct_matrix
-
+    return inp
+    return np.around(dct_matrix.transpose() @ inp @ dct_matrix)
 
 # block = (matrix, pos = array[row,col]).
 def blockAdd(block, mat):
@@ -91,14 +91,15 @@ def frameRC(mbl, frame):
 
 # mb = (matrix block, pos, mv)
 def scenarioVLD_func1(mbl):
-    pos = mbl[0][1]
-    block = mbl[0][0]
+    #print(mbl)
+    block = mbl[0][0][0]
+    pos = mbl[0][0][1]
     return [[(block, pos)], []]
 
 def scenarioVLD_func2(mbl):
-    pos = mbl[0][1]
-    block = mbl[0][0]
-    mv = mbl[0][2]
+    block = mbl[0][0][0]
+    pos = mbl[0][0][1]
+    mv = mbl[0][0][2]
     return [[(block,pos)],[(pos,mv)]]
 
 def scenarioVLD(n):
@@ -111,8 +112,8 @@ def scenarioVLD(n):
 
 
 def scenarioIDCT_func(mbl):
-    pos = mbl[0][1]
-    block = mbl[0][0]
+    block = mbl[0][0][0]
+    pos = mbl[0][0][1]
     return [[(idct(block), pos)]]
 
 def scenarioIDCT(n):
@@ -121,12 +122,13 @@ def scenarioIDCT(n):
     raise Exception('scenarioIDCT: Outside scenario range')
 
 
-def scenarioMC_func1(b,ml):
+def scenarioMC_func1(inputs):
     return [[np.zeros(fs)]]
 
-def scenarioMC_func2(b,ml):
-    m = ml[0]
-    return [[motionComp(b, m, bs)]]
+def scenarioMC_func2(inputs):
+    mvl = inputs[0]
+    frame = inputs[1][0]
+    return [[motionComp(mvl, frame, bs)]]
 
 def scenarioMC(n):
     if n == 0:
@@ -137,9 +139,10 @@ def scenarioMC(n):
         raise Exception('scenarioMC: Outside scenario range')
 
 
-def scenarioRC_func(a, bl):
-    b = bl[0]
-    return [[frameRC(a,b)], [True]]
+def scenarioRC_func(inputs):
+    mbl = inputs[0]
+    frame = inputs[1][0]
+    return [[frameRC(mbl,frame)], [True]]
 
 def scenarioRC(n):
     if n == 0:
@@ -165,8 +168,11 @@ def nextStateFD(state, inps):
 # Output decode function for detector FD
 def outDecodeFD(state):
     if state == 0:
-        return [[]]
-    return
+        return [[scenarioVLD(0) for i in range(nb)], [scenarioIDCT(1) for i in range(nb)], [scenarioMC(0)], [scenarioRC(0)]]
+    elif state > 0 and state < nb:
+        return [[scenarioVLD(1) for i in range(state)], [scenarioIDCT(1) for i in range(state)], [scenarioMC(state)], [scenarioRC(state)]]
+    else:
+        raise Exception('outDecodeFD: Outside scenario range')
 
 
 
@@ -203,13 +209,13 @@ s_out2.put(np.zeros(fs))
 VLD = Kernel(c_vld, [s_mb], [s_db, s_v], 0)
 IDCT = Kernel(c_idct, [s_db], [s_idct], 0)
 MC = Kernel(c_mc, [s_v, s_out2], [s_pf], 0)
-RC = Kernel(c_rc, [s_idct, s_pf], [s_out], 0)
+RC = Kernel(c_rc, [s_idct, s_pf], [s_out, s_fb], 0)
 
 # Forks
 fork_out = Fork(s_out, [s_out1, s_out2], 0)
 
 # Detector
-FD = Detector([1,1], nextStateFD, outDecodeFD, 0, [s_ft, s_fb], [c_idct, c_vld, c_mc, c_rc], 0)
+FD = Detector([1,1], nextStateFD, outDecodeFD, 0, [s_ft, s_fb], [c_vld, c_idct, c_mc, c_rc], 0)
 
 
 ################### Test the module ####################
@@ -223,8 +229,39 @@ if __name__ == '__main__':
     # print(blockAdd((b,np.array([0,0])),a))
     # print(frame2mblocks((3,3),a))
 
-    a = np.around(10*np.random.rand(4,4))
+    # a = np.around(10*np.random.rand(4,4))
+    # print(a)
+    # print('\n')
+    # mvs = [(np.array([1,1]), np.array([1,0])), (np.array([3,3]), np.array([0,-1]))]
+    # print(motionComp(mvs,a,2))
+
+    a = np.around(256*np.random.rand(fs[0],fs[1]))
+    a = a
+    b = frame2mblocks((bs,bs),a)
+
+    ft = ['I']
+    print('Input\n')
     print(a)
-    print('\n')
-    mvs = [(np.array([1,1]), np.array([1,0])), (np.array([3,3]), np.array([0,-1]))]
-    print(motionComp(mvs,a,2))
+
+    for i in b:
+        s_mb.put(i)
+    for i in ft:
+        s_ft.put(i)
+
+    FD.start()
+    VLD.start()
+    IDCT.start()
+    MC.start()
+    RC.start()
+    fork_out.start()
+
+    print('Output\n')
+    out = s_out1.get()
+    print(out)
+
+    FD.terminate()
+    VLD.terminate()
+    IDCT.terminate()
+    MC.terminate()
+    RC.terminate()
+    fork_out.terminate()
