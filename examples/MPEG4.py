@@ -10,6 +10,7 @@ sys.path.insert(0, '../MoC')
 
 from SADF import *
 import numpy as np
+from typing import List, Tuple
 
 
 ################### Model parameters ####################
@@ -220,51 +221,47 @@ FD = Detector([1,1], nextStateFD, outDecodeFD, 0, [s_ft, s_fb], [c_vld, c_idct, 
 ################### Input creation functions ####################
 
 # Generates a random input stream of macro blocs based on a list of frame types
-def genInpStream(fTypeList):
+def genInpStream(frameTypeList: List[str], fs: Tuple[int, int], bs: int) -> List[Tuple]:
     output = []
-    for i in fTypeList:
+    for i in frameTypeList:
         if i == 'I':
             output += frame2mblocks((bs,bs),(256*np.random.rand(fs[0],fs[1])).astype(int))
         elif i[0] == 'P':
             a = int(i[1:])
             posList = [np.array([a,b]) for a in range(1, fs[0] - bs + 2,bs) for b in range(1, fs[0] - bs + 2,bs)]
-            print(posList)
             output += [((256*np.random.rand(bs,bs)).astype(int), \
-                posList.pop(int(np.random.rand()*len(posList))), \
+                posList.pop(np.random.randint(0,len(posList))), \
                 (bs*np.random.rand(2) - bs/2).astype(int)) for j in range(a)]
     return output
+
+# Generates a random input stream of frame types
+def genFtStream(size: int, nb: int) -> List[str]:
+    ft = ['I']
+    for i in range(size-1):
+        a = np.random.randint(0, nb)
+        if a == 0:
+            ft.append('I')
+        else:
+            ft.append('P'+str(a))
+    return ft
+
 
 ################### Test the module ####################
 
 if __name__ == '__main__':
-    print("MPEG4 model\n")
-    # print(idct(np.eye(3)))
-    #
-    # a = np.eye(4)
-    # b = np.eye(2)
-    # print(blockAdd((b,np.array([0,0])),a))
-    # print(frame2mblocks((3,3),a))
+    print("MPEG4 model")
 
-    # a = np.around(10*np.random.rand(4,4))
-    # print(a)
-    # print('\n')
-    # mvs = [(np.array([1,1]), np.array([1,0])), (np.array([3,3]), np.array([0,-1]))]
-    # print(motionComp(mvs,a,2))
+    # Generate input streams
+    ft = genFtStream(10,nb)
+    mbInputs = genInpStream(ft, fs, bs)
 
-    # a = np.around(256*np.random.rand(fs[0],fs[1]))
-    # a = a
-    # b = frame2mblocks((bs,bs),a)
-
-    ft = ['I','P2']
-    a = genInpStream(ft)
-    print('Input\n')
-    print(a)
-
-    for i in a:
-        s_mb.put(i)
+    # Put input signal in the input queues
     for i in ft:
         s_ft.put(i)
+    for i in mbInputs:
+        s_mb.put(i)
 
+    # Start the processes
     FD.start()
     VLD.start()
     IDCT.start()
@@ -272,10 +269,12 @@ if __name__ == '__main__':
     RC.start()
     fork_out.start()
 
-    print('Output\n')
-    out = s_out1.get()
-    print(out)
+    # Get the outputs
+    out = []
+    for i in ft:
+        out.append(s_out1.get())
 
+    # Terminate the processes
     FD.terminate()
     VLD.terminate()
     IDCT.terminate()
