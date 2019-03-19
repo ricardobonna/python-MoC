@@ -175,8 +175,6 @@ def outDecodeFD(state):
         raise Exception('outDecodeFD: Outside scenario range')
 
 
-
-
 ################### Data and control channels ####################
 
 # Data channels
@@ -220,7 +218,27 @@ FD = Detector([1,1], nextStateFD, outDecodeFD, 0, [s_ft, s_fb], [c_vld, c_idct, 
 
 ################### Input creation functions ####################
 
+# uncomment the line below if you want to put these functions on a different file
+# import numpy as np
+
+# Generates a random input stream of frame types
+# arguments: size = length of the output stream
+#            nb = number of blocks per frame
+def genFtStream(size: int, nb: int) -> List[str]:
+    ft = ['I']
+    for i in range(size-1):
+        a = np.random.randint(0, nb)
+        if a == 0:
+            ft.append('I')
+        else:
+            ft.append('P'+str(a))
+    return ft
+
+
 # Generates a random input stream of macro blocs based on a list of frame types
+# arguments: frameTypeList = list outputted by genFtStream
+#            fs = tuple with the frame size
+#            bs = block size
 def genInpStream(frameTypeList: List[str], fs: Tuple[int, int], bs: int) -> List[Tuple]:
     output = []
     for i in frameTypeList:
@@ -234,17 +252,8 @@ def genInpStream(frameTypeList: List[str], fs: Tuple[int, int], bs: int) -> List
                 (bs*np.random.rand(2) - bs/2).astype(int)) for j in range(a)]
     return output
 
-# Generates a random input stream of frame types
-def genFtStream(size: int, nb: int) -> List[str]:
-    ft = ['I']
-    for i in range(size-1):
-        a = np.random.randint(0, nb)
-        if a == 0:
-            ft.append('I')
-        else:
-            ft.append('P'+str(a))
-    return ft
-
+# each macro block is either a 2-tuple (bs x bs np.array, np.array) for I frames
+#                         or a 3-tuple (bs x bs np.array, np.array, np.array) for P frames
 
 ################### Test the module ####################
 
