@@ -39,8 +39,8 @@ def idct(inp):
 # block = (matrix, pos = array[row,col]).
 def blockAdd(block, mat):
     pos_start = np.array([1,1])   # put [0,0] is you want the position to be 0 indexed
-    b_mat = block.block
-    b_pos = block.pos-pos_start
+    b_mat = block[0]
+    b_pos = block[1]-pos_start
     b_size = b_mat.shape
     m_size = mat.shape
     result = np.zeros(m_size).astype(int)
@@ -60,8 +60,8 @@ def blockAdd(block, mat):
 def motionComp(mvs, x, bs):
     x_size = x.shape
     x = frame2mblocks((bs,bs), x)
-    mCompList1 = [MacroBlock(a.block, a.pos+b[1]) for a in x for b in mvs if np.array_equal(a.pos, b[0])]
-    mCompList2 = [a for a in x if not any(map(lambda x: np.array_equal(a.pos,x), [b[0] for b in mvs]))]
+    mCompList1 = [(a[0], a[1]+b[1]) for a in x for b in mvs if np.array_equal(a[1], b[0])]
+    mCompList2 = [a for a in x if not any(map(lambda x: np.array_equal(a[1],x), [b[0] for b in mvs]))]
     mCompList = mCompList1 + mCompList2
     result = np.zeros(x_size).astype(int)
     for i in mCompList:
@@ -81,15 +81,15 @@ def frameRC(mbl, frame):
 
 # mb = (matrix block, pos, mv)
 def scenarioVLD_func1(mbl):
-    block = mbl[0][0].block
-    pos = mbl[0][0].pos
-    return [[MacroBlock(block, pos)], []]
+    block = mbl[0][0][0]
+    pos = mbl[0][0][1]
+    return [[(block, pos)], []]
 
 def scenarioVLD_func2(mbl):
-    block = mbl[0][0].block
-    pos = mbl[0][0].pos
-    mv = mbl[0][0].motionV
-    return [[MacroBlock(block, pos)],[(pos,mv)]]
+    block = mbl[0][0][0]
+    pos = mbl[0][0][1]
+    mv = mbl[0][0][2]
+    return [[(block,pos)],[(pos,mv)]]
 
 def scenarioVLD(n):
     if n == 0:
@@ -101,9 +101,9 @@ def scenarioVLD(n):
 
 
 def scenarioIDCT_func(mbl):
-    block = mbl[0][0].block
-    pos = mbl[0][0].pos
-    return [[MacroBlock(idct(block), pos)]]
+    block = mbl[0][0][0]
+    pos = mbl[0][0][1]
+    return [[(idct(block), pos)]]
 
 def scenarioIDCT(n):
     if n == 1:
@@ -243,5 +243,3 @@ if __name__ == '__main__':
     MC.terminate()
     RC.terminate()
     fork_out.terminate()
-
-    print(out)

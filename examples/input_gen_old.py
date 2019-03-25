@@ -2,30 +2,6 @@ from typing import List, Tuple
 import numpy as np
 
 
-################### Macro Block classes ####################
-
-class MacroBlock(object):
-    def __init__(self, block, pos):
-        self.block = block
-        self.pos = pos
-
-    def __repr__(self):
-        return 'PosB(block = ' + str(self.block) + ', pos = ' + str(self.pos) + ')'
-
-    def __str__(self):
-        return 'PosB(block = ' + str(self.block) + ', pos = ' + str(self.pos) + ')'
-
-class FullB(MacroBlock):
-    def __init__(self, block, pos, motionV):
-        MacroBlock.__init__(self, block, pos)
-        self.motionV = motionV
-
-    def __repr__(self):
-        return 'FullB(block = ' + str(self.block) + ', pos = ' + str(self.pos) + ', motionV = ' + str(self.motionV) + ')'
-
-    def __str__(self):
-        return 'FullB(block = ' + str(self.block) + ', pos = ' + str(self.pos) + ', motionV = ' + str(self.motionV) + ')'
-
 
 # Split a large block into a listo of macro blocks of size d = (dr,dc) or smaller
 def frame2mblocks(d,frame):
@@ -35,7 +11,7 @@ def frame2mblocks(d,frame):
     while i < frame.shape[0]:
         j = 0
         while j < frame.shape[1]:
-            result.append(MacroBlock(frame[i:i+dr,j:j+dc], np.array([i+1,j+1])))
+            result.append((frame[i:i+dr,j:j+dc], np.array([i+1,j+1])))
             j+=dc
         i+=dr
     return result
@@ -71,7 +47,7 @@ def genInpStream(frameTypeList: List[str], fs: Tuple[int, int], bs: int) -> List
         elif i[0] == 'P':
             a = int(i[1:])
             posList = [np.array([a,b]) for a in range(1, fs[0] - bs + 2,bs) for b in range(1, fs[0] - bs + 2,bs)]
-            output += [FullB((256*np.random.rand(bs,bs)).astype(int), \
+            output += [((256*np.random.rand(bs,bs)).astype(int), \
                 posList.pop(np.random.randint(0,len(posList))), \
                 (bs*np.random.rand(2) - bs/2).astype(int)) for j in range(a)]
     return output
