@@ -217,9 +217,10 @@ if __name__ == '__main__':
 
     fs = (int(args[0]), int(args[1]))
     bs = int(args[2])
+    if fs[0] % bs != 0 or fs[1] % bs != 0:
+        raise Exception("Frame dimensions must be multiples of the block size.")
     nb = int(fs[0]*fs[1]/(bs**2))
     nFrames = int(args[3])
-    s_out2.put(np.zeros(fs).astype(int))
 
     # Generate input streams and save them
     ft = genFtStream(nFrames,nb)
@@ -227,6 +228,7 @@ if __name__ == '__main__':
     saveInpsToFile(ft, mbInputs)
 
     # Put input signal in the input queues
+    s_out2.put(np.zeros(fs).astype(int))
     for i in ft:
         s_ft.put(i)
     for i in mbInputs:
