@@ -1,5 +1,6 @@
 from typing import List, Tuple
 import numpy as np
+import sys
 
 
 ################### Macro Block classes ####################
@@ -10,10 +11,10 @@ class MacroBlock(object):
         self.pos = pos
 
     def __repr__(self):
-        return 'PosB(block = ' + str(self.block) + ', pos = ' + str(self.pos) + ')'
+        return 'PosB {block = fromLists ' + np.array2string(self.block, separator=', ') + ', pos = ' + str(tuple(self.pos)) + '}'
 
     def __str__(self):
-        return 'PosB(block = ' + str(self.block) + ', pos = ' + str(self.pos) + ')'
+        return 'PosB {block = fromLists ' + np.array2string(self.block, separator=', ') + ', pos = ' + str(tuple(self.pos)) + '}'
 
 class FullB(MacroBlock):
     def __init__(self, block, pos, motionV):
@@ -21,14 +22,14 @@ class FullB(MacroBlock):
         self.motionV = motionV
 
     def __repr__(self):
-        return 'FullB(block = ' + str(self.block) + ', pos = ' + str(self.pos) + ', motionV = ' + str(self.motionV) + ')'
+        return 'FullB {block = fromLists ' + np.array2string(self.block, separator=', ') + ', pos = ' + str(tuple(self.pos)) + ', motionV = ' + str(tuple(self.motionV)) + '}'
 
     def __str__(self):
-        return 'FullB(block = ' + str(self.block) + ', pos = ' + str(self.pos) + ', motionV = ' + str(self.motionV) + ')'
+        return 'FullB {block = fromLists ' + np.array2string(self.block, separator=', ') + ', pos = ' + str(tuple(self.pos)) + ', motionV = ' + str(tuple(self.motionV)) + '}'
 
 
 # Split a large block into a listo of macro blocks of size d = (dr,dc) or smaller
-def frame2mblocks(d,frame):
+def frame2mblocks(d: Tuple[int, int], frame: np.ndarray) -> MacroBlock:
     (dr,dc) = d
     result = []
     i = 0
@@ -75,3 +76,30 @@ def genInpStream(frameTypeList: List[str], fs: Tuple[int, int], bs: int) -> List
                 posList.pop(np.random.randint(0,len(posList))), \
                 (bs*np.random.rand(2) - bs/2).astype(int)) for j in range(a)]
     return output
+
+
+################### Save to file ####################
+
+def saveInpsToFile(ft, mb, ftFile = 'ft.inp', mbFile = 'mbInputs.inp'):
+    ft = str(ft).replace("'", '"')
+    mb = str(mb).replace('\n','')
+    f = open(ftFile, 'w')
+    f.write(ft)
+    f.close()
+    f = open(mbFile, 'w')
+    f.write(mb)
+    f.close()
+    return
+
+
+################### Execution as main ####################
+
+if __name__ == '__main__':
+    args = sys.argv[1:]
+
+    fs = (int(args[0]), int(args[1]))
+    bs = int(args[2])
+    nb = int(fs[0]*fs[1]/(bs**2))
+    ft = genFtStream(int(args[3]), nb)
+    mb = genInpStream(ft, fs, bs)
+    saveInpsToFile(ft, mb)
