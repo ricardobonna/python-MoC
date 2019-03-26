@@ -6,12 +6,13 @@ modeled with SADF
 """
 
 import sys
-sys.path.insert(0, '../MoC')
+sys.path.insert(0, '../../MoC')
 
 from SADF import *
 from input_gen import *
 import numpy as np
 from typing import List, Tuple
+import time
 
 
 ################### Model parameters ####################
@@ -34,7 +35,7 @@ def idct(inp):
                 dct_matrix[i,j] = np.cos((2*j+1) * i * np.pi / (2*size[0]))
     dct_matrix = dct_matrix * np.sqrt(2/size[0])
 #    return inp     # Uncomment this line for testing
-    return (dct_matrix.transpose() @ inp @ dct_matrix).astype(int)
+    return np.round(dct_matrix.transpose() @ inp @ dct_matrix).astype(int)
 
 # block = (matrix, pos = array[row,col]).
 def blockAdd(block, mat):
@@ -188,7 +189,6 @@ c_rc = Queue()
 s_fb.put(True)
 s_fb.put(True)
 s_fb.put(True)
-s_out2.put(np.zeros(fs).astype(int))
 
 ################### Processes ####################
 
@@ -208,20 +208,32 @@ FD = Detector([1,1], nextStateFD, outDecodeFD, 0, [s_ft, s_fb], [c_vld, c_idct, 
 # each macro block is either a 2-tuple (bs x bs np.array, np.array) for I frames
 #                         or a 3-tuple (bs x bs np.array, np.array, np.array) for P frames
 
-################### Test the module ####################
+################### Execute the module ####################
 
 if __name__ == '__main__':
     print("MPEG4 model")
 
-    # Generate input streams
-    ft = genFtStream(10,nb)
+    args = sys.argv[1:] #args: fs[0] fs[1] bs nFrames
+
+    fs = (int(args[0]), int(args[1]))
+    bs = int(args[2])
+    nb = int(fs[0]*fs[1]/(bs**2))
+    nFrames = int(args[3])
+    s_out2.put(np.zeros(fs).astype(int))
+
+    # Generate input streams and save them
+    ft = genFtStream(nFrames,nb)
     mbInputs = genInpStream(ft, fs, bs)
+    saveInpsToFile(ft, mbInputs)
 
     # Put input signal in the input queues
     for i in ft:
         s_ft.put(i)
     for i in mbInputs:
         s_mb.put(i)
+
+    # Start timer
+    start = time.time()
 
     # Start the processes
     FD.start()
@@ -236,6 +248,11 @@ if __name__ == '__main__':
     for i in ft:
         out.append(s_out1.get())
 
+    # Stop timer
+    end = time.time()
+    elapsed = round(end - start, 4)
+    fps = round(nFrames/elapsed, 4)
+
     # Terminate the processes
     FD.terminate()
     VLD.terminate()
@@ -244,4 +261,5 @@ if __name__ == '__main__':
     RC.terminate()
     fork_out.terminate()
 
-    print(out)
+    print('Frame size: ' + str(fs) + '\nBlock size: ' + str(bs) + '\nNumber of frames: ' + str(nFrames) + \
+        '\nTime elapsed: ' + str(elapsed) + 's' + '\nFPS: ' + str(fps))
