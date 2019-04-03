@@ -211,7 +211,7 @@ FD = Detector([1,1], nextStateFD, outDecodeFD, 0, [s_ft, s_fb], [c_vld, c_idct, 
 ################### Execute the module ####################
 
 if __name__ == '__main__':
-    print("MPEG4 model")
+    print("MPEG4 model Python")
 
     args = sys.argv[1:] #args: fs[0] fs[1] bs nFrames
 

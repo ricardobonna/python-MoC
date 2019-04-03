@@ -1,0 +1,53 @@
+
+MPEG4 model Python
+Frame size: (16, 16)
+Block size: 8
+Number of frames: 100
+Time elapsed: 0.2798s
+FPS: 357.3981
+MPEG4 model ForSyDe
+Frame size: (16, 16)
+Block size: 8
+Number of frames: 100
+Time elapsed: 0.0745s
+FPS: 1342.5408
+-----------------
+MPEG4 model Python
+Frame size: (32, 32)
+Block size: 8
+Number of frames: 100
+Time elapsed: 2.4075s
+FPS: 41.5369
+MPEG4 model ForSyDe
+Frame size: (32, 32)
+Block size: 8
+Number of frames: 100
+Time elapsed: 0.5886s
+FPS: 169.8925
+-----------------
+MPEG4 model Python
+Frame size: (64, 64)
+Block size: 8
+Number of frames: 100
+Time elapsed: 29.366s
+FPS: 3.4053
+MPEG4 model ForSyDe
+Frame size: (64, 64)
+Block size: 8
+Number of frames: 100
+Time elapsed: 8.6245s
+FPS: 11.5949
+-----------------
+MPEG4 model Python
+Frame size: (128, 128)
+Block size: 8
+Number of frames: 100
+Time elapsed: 422.3694s
+FPS: 0.2368
+MPEG4 model ForSyDe
+Frame size: (128, 128)
+Block size: 8
+Number of frames: 100
+Time elapsed: 167.7308s
+FPS: 0.5962
+-----------------
