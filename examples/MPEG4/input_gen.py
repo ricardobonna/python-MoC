@@ -29,7 +29,7 @@ class FullB(MacroBlock):
 
 
 # Split a large block into a listo of macro blocks of size d = (dr,dc) or smaller
-def frame2mblocks(d: Tuple[int, int], frame: np.ndarray) -> MacroBlock:
+def frame2mblocks(d: Tuple[int, int], frame: np.ndarray) -> List[MacroBlock]:
     (dr,dc) = d
     result = []
     i = 0

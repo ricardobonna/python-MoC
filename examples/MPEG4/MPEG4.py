@@ -56,7 +56,7 @@ def blockAdd(block, mat):
 
 
 
-# Get a matrix x and a list of motion vecotrs and return a motion compensated matrix
+# Get a matrix x and a list of motion vectors and return a motion compensated matrix
 # mvs = [(array(pos), array(mv))]
 def motionComp(mvs, x, bs):
     x_size = x.shape

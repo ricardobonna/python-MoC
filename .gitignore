@@ -106,3 +106,5 @@ venv.bak/
 
 # other files
 *.inp
+*.dat
+*.sh
