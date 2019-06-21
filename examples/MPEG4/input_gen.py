@@ -74,7 +74,7 @@ def genInpStream(frameTypeList: List[str], fs: Tuple[int, int], bs: int) -> List
             posList = [np.array([a,b]) for a in range(1, fs[0] - bs + 2,bs) for b in range(1, fs[0] - bs + 2,bs)]
             output += [FullB((256*np.random.rand(bs,bs)).astype(int), \
                 posList.pop(np.random.randint(0,len(posList))), \
-                (bs*np.random.rand(2) - bs/2).astype(int)) for j in range(a)]
+                (np.random.randint(2*bs+1, size=2) - bs).astype(int)) for j in range(a)]
     return output
 
 

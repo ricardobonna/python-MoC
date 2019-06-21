@@ -263,5 +263,10 @@ if __name__ == '__main__':
     RC.terminate()
     fork_out.terminate()
 
+
+#    for i in out:
+#        print(i)
+#        print("\n")
+
     print('Frame size: ' + str(fs) + '\nBlock size: ' + str(bs) + '\nNumber of frames: ' + str(nFrames) + \
         '\nTime elapsed: ' + str(elapsed) + 's' + '\nFPS: ' + str(fps))
